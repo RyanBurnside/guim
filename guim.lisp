@@ -16,7 +16,6 @@
   ((x :accessor x :initarg :x :initform 0f0)
    (y :accessor y :initarg :y :initform 0f0)))
 
-;;; 3. Method for copying coordinates from another point object
 (defgeneric move (thing x y))
 
 (defmethod move ((p point) x y)
@@ -48,22 +47,27 @@
           (cond ((and min-h (< new-value min-h)) min-h)
                 ((and max-h (> new-value max-h)) max-h)
                 (t new-value)))))
-  
+
+;; Ensures width and height conform
+(defmethod initialize-instance :after ((a area) &key)
+  (setf (width a) (width a)
+        (height a) (height a)))
+
 (defgeneric resize (thing width height))
 
 (defmethod resize ((a area) width height)
   (setf (width a) width
         (height a) height))
 
-(defclass rectangle (point area)())
+(defclass region (point area)())
 
 ;;; GUI Elements
-(defclass interactable (rectangle)
+(defclass interactable (region)
   ((active :accessor active :initarg :active :initform t)
    (focused :accessor focused :initarg :focused :initform nil)
    (fn :accessor fn :initarg :fn :initform nil)))
 
-(defclass drawable (rectangle)
+(defclass drawable (region)
   ((style :accessor style :initarg :style :initform nil)))
 
 (defgeneric draw (drawable &optional backend)
@@ -89,14 +93,15 @@
 (defclass ui-button (ui-widget)
   ((label :accessor label
           :initarg :label
-          :initform (make-instance 'ui-label)
-          :type ui-label)))
+          :type ui-label))
+  (:default-initargs :label (make-ui-label "")))
 
 (defclass ui-window (ui-widget)
   ((label :accessor label
           :initarg :label
-          :initform (make-instance 'ui-label)
-          :type ui-label)))
+          :type ui-label))
+  (:default-initargs :label (make-ui-label "")))
+
 
 ;;; GUI Container
 
@@ -110,6 +115,3 @@
 (defclass ui-freeform-container (ui-container) ())
 
 (defclass ui-framesplit-container (ui-container) ())
-
-
-
